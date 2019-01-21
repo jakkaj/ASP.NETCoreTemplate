@@ -1,5 +1,14 @@
 trigger:
-- master
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - src/
+    - azure-pipelines.yml
+    exclude:
+    - README.md
 
 pr:
 - master
