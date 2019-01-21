@@ -1,0 +1,40 @@
+trigger:
+- master
+
+pr:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+variables:
+  acrName: devcrewsampleregistry
+  imageName: 'apps/coretemplate:CI-$(build.buildId)'
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Restore dotnet dependencies
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Build all dotnet projects
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Run dotnet tests
+  inputs:
+    command: 'test'
+    projects: 'src/Core.MSTests/Core.MSTests.csproj'
+
+- task: AzureCLI@1
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+  displayName: Push to Azure Container Registry
+  inputs:
+    azureSubscription: jordans
+    scriptLocation: 'inlineScript' 
+    inlineScript: az acr build --registry $(acrName) --image $(imageName) src/Core.Web
+
