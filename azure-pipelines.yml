@@ -9,6 +9,7 @@ pool:
 
 variables:
   acrName: devcrewsampleregistry
+  BuildConfiguration: 'Release'
   imageName: 'apps/coretemplate:CI-$(build.buildId)'
 
 steps:
@@ -23,12 +24,14 @@ steps:
   inputs:
     command: 'build'
     projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
   displayName: Run dotnet tests
   inputs:
     command: 'test'
     projects: 'src/Core.MSTests/Core.MSTests.csproj'
+    arguments: '--configuration $(BuildConfiguration) --collect "Code Coverage"'
 
 - task: AzureCLI@1
   condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
@@ -36,5 +39,5 @@ steps:
   inputs:
     azureSubscription: jordans
     scriptLocation: 'inlineScript' 
-    inlineScript: az acr build --registry $(acrName) --image $(imageName) src/Core.Web
+    inlineScript: az acr build --registry $(acrName) --image $(imageName) src/
 
